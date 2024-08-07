@@ -1,7 +1,18 @@
 "use server";
 
 import db from "@/utils/db";
+import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+
+// Helper functions start ------
+const getAuthUser = async () => {
+  const user = await currentUser();
+  if (!user) {
+    throw new Error("You must be logged in to access this route");
+  }
+  return user;
+};
+// Helper functions end ------
 
 export const fetchFeaturedProducts = async () => {
   await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -35,6 +46,16 @@ export const fetchSingleProduct = async (productId: string) => {
     },
   });
   if (!response) redirect(`/products`);
+  return response;
+};
+
+export const fetchAdminProducts = async () => {
+  const clerkId = process.env.NEXT_PUBLIC_ADMIN;
+  const response = await db.product.findMany({
+    where: {
+      clerkId: clerkId,
+    },
+  });
   return response;
 };
 
